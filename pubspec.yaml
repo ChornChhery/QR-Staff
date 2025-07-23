@@ -8,6 +8,8 @@ environment:
   sdk: ^3.8.0
 
 dependencies:
+  fl_chart: ^0.60.0
+  share_plus: ^7.0.0
   flutter:
     sdk: flutter
 

@@ -8,19 +8,23 @@ environment:
   sdk: ^3.8.0
 
 dependencies:
-  fl_chart: ^0.60.0
-  share_plus: ^7.0.0
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.8
 
-  # ✅ All these must be outside the flutter: block
+  # Core App Packages
+  intl: ^0.18.1
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.1
+
+  # QR & Scanner Features
   qr_flutter: ^4.0.0
   mobile_scanner: ^3.2.0
-  path_provider: ^2.1.1
-  shared_preferences: ^2.2.2
-  intl: ^0.18.1
+
+  # Charts & Sharing
+  fl_chart: ^0.35.0
+  share_plus: ^7.0.0
   csv: ^5.0.1
-  cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:

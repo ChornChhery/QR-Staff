@@ -11,6 +11,7 @@ class StaffPage extends StatefulWidget {
 
 class _StaffPageState extends State<StaffPage> {
   List<String> staffList = [];
+  final TextEditingController _staffController = TextEditingController();
 
   @override
   void initState() {
@@ -18,8 +19,13 @@ class _StaffPageState extends State<StaffPage> {
     _loadStaff();
   }
 
+  @override
+  void dispose() {
+    _staffController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadStaff() async {
-    // Load staff list from shared preferences or local storage
     final logs = await FileHelper.loadLogs();
     setState(() {
       staffList = logs.keys.toList();
@@ -27,9 +33,9 @@ class _StaffPageState extends State<StaffPage> {
   }
 
   Future<void> _addStaff(String staffId) async {
+    staffId = staffId.trim();
     if (staffId.isEmpty || staffList.contains(staffId)) return;
 
-    // Add the new staff member
     final logs = await FileHelper.loadLogs();
     logs[staffId] = [];
     await FileHelper.saveLogs(logs);
@@ -37,12 +43,17 @@ class _StaffPageState extends State<StaffPage> {
     setState(() {
       staffList.add(staffId);
     });
+
+    _staffController.clear();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('✅ Added staff: $staffId')),
+    );
   }
 
   Future<void> _removeStaff(String staffId) async {
     if (!staffList.contains(staffId)) return;
 
-    // Remove staff member and their logs
     final logs = await FileHelper.loadLogs();
     logs.remove(staffId);
     await FileHelper.saveLogs(logs);
@@ -57,10 +68,13 @@ class _StaffPageState extends State<StaffPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('QR Code for $staffId'),
-        content: QrImageView(
-          data: staffId,
-          version: QrVersions.auto,
-          size: 200.0,
+        content: SizedBox(
+          width: 200,
+          height: 200,
+          child: QrImageView(
+            data: staffId,
+            version: QrVersions.auto,
+          ),
         ),
         actions: [
           TextButton(
@@ -82,10 +96,13 @@ class _StaffPageState extends State<StaffPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-              onSubmitted: _addStaff,
-              decoration: const InputDecoration(
+              controller: _staffController,
+              decoration: InputDecoration(
                 labelText: 'Add Staff ID',
-                suffixIcon: Icon(Icons.add),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () => _addStaff(_staffController.text),
+                ),
               ),
             ),
             const SizedBox(height: 20),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'pages/scanner_page.dart';
 import 'pages/logs_page.dart';
+import 'pages/scanner_page.dart';
 import 'pages/staff_page.dart';
 
 void main() {
@@ -13,16 +13,21 @@ class StaffTimerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Offline QR Staff Timer',
-      theme: ThemeData(primarySwatch: Colors.indigo),
-      home: const HomePage(),
+      title: 'QR Staff Timer',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.blue,
+        brightness: Brightness.light,
+      ),
       debugShowCheckedModeBanner: false,
+      home: const HomePage(),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -30,24 +35,23 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _index = 0;
 
-  final pages = const [
+  final _pages = const [
     QRScannerPage(),
     LogsPage(),
-    ManageStaffPage(),
+    StaffPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Offline QR Staff Timer')),
-      body: pages[_index],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        onTap: (value) => setState(() => _index = value),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.qr_code_scanner), label: 'Scan QR'),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Logs'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Staff'),
+      body: _pages[_index],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _index,
+        onDestinationSelected: (int i) => setState(() => _index = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.qr_code), label: 'Scan'),
+          NavigationDestination(icon: Icon(Icons.list_alt), label: 'Logs'),
+          NavigationDestination(icon: Icon(Icons.group), label: 'Staff'),
         ],
       ),
     );

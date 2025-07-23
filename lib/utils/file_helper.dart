@@ -3,22 +3,30 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 class FileHelper {
-  static Future<File> _getLogFile() async {
-    final dir = await getApplicationDocumentsDirectory();
-    return File('${dir.path}/logs.json');
-  }
-
-  static Future<Map<String, dynamic>> loadLogs() async {
-    final file = await _getLogFile();
-    if (!(await file.exists())) {
+  static Future<Map<String, List<Map<String, String>>>> loadLogs() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/logs.json');
+      if (!await file.exists()) {
+        return {};
+      }
+      final contents = await file.readAsString();
+      final jsonData = jsonDecode(contents);
+      return Map<String, List<Map<String, String>>>.from(jsonData);
+    } catch (e) {
       return {};
     }
-    final content = await file.readAsString();
-    return content.isNotEmpty ? jsonDecode(content) : {};
   }
 
-  static Future<void> saveLogs(Map<String, dynamic> logs) async {
-    final file = await _getLogFile();
-    await file.writeAsString(jsonEncode(logs));
+  static Future<void> saveLogs(Map<String, List<Map<String, String>>> logs) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/logs.json');
+      final jsonData = jsonEncode(logs);
+      await file.writeAsString(jsonData);
+    } catch (e) {
+      // Handle any error, e.g. log to console or show snackbar
+      print('Error saving logs: $e');
+    }
   }
 }

@@ -57,7 +57,7 @@ class _StaffPageState extends State<StaffPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('QR Code for $staffId'),
-        content: QrImage(
+        content: QrImageView(
           data: staffId,
           version: QrVersions.auto,
           size: 200.0,
@@ -89,7 +89,7 @@ class _StaffPageState extends State<StaffPage> {
               ),
             ),
             const SizedBox(height: 20),
-            Text('Staff List:', style: Theme.of(context).textTheme.headline6),
+            Text('Staff List:', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 10),
             Expanded(
               child: staffList.isEmpty

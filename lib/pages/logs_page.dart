@@ -45,8 +45,7 @@ class _LogsPageState extends State<LogsPage> {
       if (date.isAfter(start.subtract(const Duration(days: 1))) &&
           date.isBefore(end.add(const Duration(days: 1)))) {
         for (final log in entry.value) {
-          final nameMatch =
-              _searchQuery.isEmpty ||
+          final nameMatch = _searchQuery.isEmpty ||
               log['name']!.toLowerCase().contains(_searchQuery.toLowerCase());
           final staffMatch =
               _selectedStaff == null || log['name'] == _selectedStaff;
@@ -80,31 +79,35 @@ class _LogsPageState extends State<LogsPage> {
         '${log['name']},${log['action']},${log['time']},${log['date']}',
       );
     }
-    // Replace with proper file saving later
     Share.share(csv.toString(), subject: 'QR Staff Logs Export');
   }
 
   Widget _buildSummaryCard() {
     final logs = _filteredLogs;
-    int checkIns = logs.where((l) => l['action'] == 'Check-in').length;
-    int checkOuts = logs.where((l) => l['action'] == 'Check-out').length;
-    int uniqueStaff = logs.map((l) => l['name']).toSet().length;
+    final checkIns = logs.where((l) => l['action'] == 'Check-in').length;
+    final checkOuts = logs.where((l) => l['action'] == 'Check-out').length;
+    final uniqueStaff = logs.map((l) => l['name']).toSet().length;
 
     return Card(
+      elevation: 3,
       margin: const EdgeInsets.symmetric(vertical: 12),
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Text(
-              '📊 Summary (${DateFormat.yMMMd().format(_selectedRange!.start)} → ${DateFormat.yMMMd().format(_selectedRange!.end)})',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
-            Text('✅ Check-ins: $checkIns'),
-            Text('❌ Check-outs: $checkOuts'),
-            Text('👥 Staff logged: $uniqueStaff'),
+            Column(children: [
+              const Text('✅'),
+              Text('Check-ins: $checkIns'),
+            ]),
+            Column(children: [
+              const Text('❌'),
+              Text('Check-outs: $checkOuts'),
+            ]),
+            Column(children: [
+              const Text('👥'),
+              Text('Staff: $uniqueStaff'),
+            ]),
           ],
         ),
       ),
@@ -150,7 +153,7 @@ class _LogsPageState extends State<LogsPage> {
                 return '';
               },
               margin: 8,
-                getTextStyles: (value) => const TextStyle(fontSize: 10),
+              getTextStyles: (value) => const TextStyle(fontSize: 10),
             ),
           ),
           gridData: FlGridData(show: false),
@@ -173,73 +176,87 @@ class _LogsPageState extends State<LogsPage> {
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 10,
               children: [
-                Expanded(
-                  child: TextButton.icon(
-                    icon: const Icon(Icons.date_range),
-                    label: Text(
-                      _selectedRange == null
-                          ? 'Select Date Range'
-                          : '${DateFormat.yMMMd().format(_selectedRange!.start)} → ${DateFormat.yMMMd().format(_selectedRange!.end)}',
-                    ),
-                    onPressed: () => _selectDateRange(context),
+                TextButton.icon(
+                  icon: const Icon(Icons.date_range),
+                  label: Text(
+                    _selectedRange == null
+                        ? 'Select Date Range'
+                        : '${DateFormat.yMMMd().format(_selectedRange!.start)} → ${DateFormat.yMMMd().format(_selectedRange!.end)}',
                   ),
+                  onPressed: () => _selectDateRange(context),
+                ),
+                DropdownButton<String>(
+                  hint: const Text('Filter by staff'),
+                  value: _selectedStaff,
+                  items: staffList.map((staff) {
+                    return DropdownMenuItem<String>(
+                      value: staff,
+                      child: Text(staff ?? 'Unknown'),
+                    );
+                  }).toList(),
+                  onChanged: (value) => setState(() => _selectedStaff = value),
                 ),
               ],
             ),
-            if (_selectedRange != null) _buildSummaryCard(),
-            if (_selectedRange != null) _buildChart(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             TextField(
               decoration: const InputDecoration(
                 labelText: '🔍 Search staff by name',
                 prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
               ),
               onChanged: (value) => setState(() => _searchQuery = value),
             ),
-            DropdownButton<String>(
-              hint: const Text('Filter by staff'),
-              value: _selectedStaff,
-              items: staffList.map((staff) {
-                return DropdownMenuItem<String>(
-                  value: staff,
-                  child: Text(staff ?? 'Unknown'),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedStaff = value),
+            const SizedBox(height: 20),
+            if (_selectedRange != null) _buildSummaryCard(),
+            if (_selectedRange != null) _buildChart(),
+            const SizedBox(height: 24),
+            Text(
+              '📝 Log Entries',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: _filteredLogs.isEmpty
-                  ? const Center(
-                      child: Text('No logs found for selected range'),
-                    )
-                  : ListView.builder(
-                      itemCount: _filteredLogs.length,
-                      itemBuilder: (context, index) {
-                        final log = _filteredLogs[index];
-                        final isCheckIn = log['action'] == 'Check-in';
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          child: ListTile(
-                            leading: Icon(
-                              isCheckIn ? Icons.login : Icons.logout,
-                              color: isCheckIn ? Colors.green : Colors.red,
-                            ),
-                            title: Text('${log['name']}'),
-                            subtitle: Text(
-                              '${log['action']} at ${log['time']} on ${log['date']}',
-                            ),
-                          ),
-                        );
-                      },
+            const SizedBox(height: 12),
+            if (_filteredLogs.isEmpty)
+              const Center(child: Text('No logs found for selected range'))
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _filteredLogs.length,
+                itemBuilder: (context, index) {
+                  final log = _filteredLogs[index];
+                  final isCheckIn = log['action'] == 'Check-in';
+                  final color = isCheckIn ? Colors.green : Colors.red;
+                  final bg = isCheckIn ? Colors.green[50] : Colors.red[50];
+
+                  return Card(
+                    color: bg,
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: color,
+                        child: Icon(
+                          isCheckIn ? Icons.login : Icons.logout,
+                          color: Colors.white,
+                        ),
+                      ),
+                      title: Text(log['name'] ?? 'Unknown'),
+                      subtitle: Text(
+                        '${log['action']} at ${log['time']} on ${log['date']}',
+                      ),
                     ),
-            ),
+                  );
+                },
+              ),
           ],
         ),
       ),

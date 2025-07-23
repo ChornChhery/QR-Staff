@@ -29,4 +29,33 @@ class FileHelper {
       print('Error saving logs: $e');
     }
   }
+
+  //Load staff from staff.json
+  static Future<List<String>> loadStaff() async {
+    try {
+      final directory = await getApplicationCacheDirectory();
+      final file = File('${directory.path}/staff.json');
+      if (!await file.exists()) {
+        return [];
+      }
+      final contents = await file.readAsString();
+      return List<String>.from(jsonDecode(contents));
+    } catch (e) {
+      print('Error loading staff: $e');
+      return [];
+    }
+  }
+
+  // Save staff to staff.json
+  static Future<void> saveStaff(List<String> staff) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/staff.json');
+      final jsonData = jsonEncode(staff);
+      await file.writeAsString(jsonData);
+    } catch (e) {
+      // Handle any error, e.g. log to console or show snackbar
+      print('Error saving staff: $e');
+  }
+  }
 }
